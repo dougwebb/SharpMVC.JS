@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="row">
+    <div class="col-sm-12">
+        <h1>Hello World Example</h1>
+        <div>The elements below are loaded during the initial page load, and then dynamically updated every 5 seconds:</div>
+        <div class="panel panel-default">
+            <div class="panel-heading">The page was loaded at @DateTime.Now</div>
+            @* The panel-body element's content will be updated using AJAX. To support that we've added an id attribute
+                so the javascript code can find the element, and a data-href attribute to identify the ajax handler url
+                to use. We're also doing an initial server-side render of the partial template with the current time, so
+                that we'll have valid content shown before the javascript code makes the first ajax call. We're using 
+                ViewBag to adjust the text that will be rendered initially; the request handler method will use "current"
+                instead.
+            *@
+            <div class="panel-body" id="currentTime" data-href="@Url.Action("CurrentTime", "Home")">
+                @{ ViewBag.TimeType = "initial"; }
+                @Html.Partial("CurrentTime", DateTime.Now)
+            </div>
+        </div>
+    </div>
+</div>

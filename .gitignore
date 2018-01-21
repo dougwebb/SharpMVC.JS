@@ -1,0 +1,7 @@
+/.vs
+*~
+*.swp
+[Bb]in/
+[Oo]bj/
+*/wwwroot/lib/
+

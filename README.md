@@ -83,7 +83,58 @@ public async Task<JsonResult> CurrentTime()
 
 ## State Management (aka: Where's the Data Binding?)
 
+If you're familiar with Javascript Frameworks like Angular, React, or Vue, you probably looked at the Hello World example and thought "This isn't the same kind of thing at all."
+You're right, it isn't, and that's intentional. In my experience, those sorts of frameworks don't work very well with the ASP.Net MVC server-side framework, because there is no
+integration or coordination between MVC's server-side and the client-side. 
 
+I've found that there are three kinds of state that need to be managed:
+
+### Pure Client-side State
+
+Sometimes the GUI needs to respond to a user event, but responding does not require any information from the server, and the server does not need to be informed of the event or response.
+
+Some examples of this are opening and closing expandable content areas, or switching between tabbed content panes, where all of the content is pre-loaded. Filling in forms is often like this
+as well, because the server doesn't get involved until the form is submitted, but selections might enable/disable other form controls.
+
+*Usually*, these kinds of interactions are easily handled using a GUI toolkit like Bootstrap, or by attaching Javascript event handler functions to the necessary events. You do need to
+beware of complexity in the number or nature of the events and responses, especially if responses can cause cascading events. In those cases you should make use of React or Vue and data-binding
+your state information to Javascript objects to make it more managable.
+
+Client-side form validation is a special case. For ASP.Net MVC, [form validation rules](https://docs.microsoft.com/en-us/aspnet/core/mvc/models/validation) are specified on the Model class 
+properties and Razor renders `data-` attributes on the form elements to describe the validation rules and messages. Then `jquery.validate` and `jquery.validation.unobtrusive` are used to pick
+up on those `data-` attributes and use them to perform client-side validation. You *don't* want another framework getting in the way of this behavior, which is one reason server-side rendering
+is so important in ASP.Net MVC projects.
+
+### Semi Client-side State
+
+Here, the server doesn't really care about what's going on with the client-side state, but the client needs to get additional information from the server in order to respond to a user event.
+
+Examples include expandable content areas or tab panes where the content is not pre-loaded, forms that include selection lists whose options depend on other control values but there are too many
+options overall to pre-load them, and most kinds of paged content (search results, comments forum, etc) where the user's current position in the results is not needed server-side except for when
+the next page is requested.
+
+In these cases, the client must send an AJAX request to the server with all of the parameters needed to get the necessary data. The common frameworks expect a JSON string in response, which the
+framework deserialzes into state data and uses it to update the DOM. With SmartMVC.JS that's still possible by returning a Model object, but typically the Model object is passed to a Partial View,
+and the markup from the view is returned in the AJAX response. Then it's a simple matter to update the DOM atomically by replacing the innerHTML of an element with the new markup. That container 
+element will normally carry `data-` attributes that identify the AJAX handler's url and any additional information needed to manage the element, and will also usually be the attachment point for
+event handlers to catch events as they bubble up, so that the event handlers don't need to be reattached when the DOM is updated.
+
+As noted above, if the DOM update includes form controls and you're using form validation, then you really want to render the updated form controls server-side in a Razor Partial template.
+
+### Server-side State
+
+This is where the client has to tell the server about the user interaction, because the server must make an update to server-side state, such as updating a database.
+
+The most obvious example is submitting a form, but it many apps just manipulating a control will cause an immediate server-side state change. Again, an AJAX request must be sent with
+parameters that specify the new state. For a form submission jQuery's `$("#formid").serialize()` can be used to serialize the data, which can be passed to `$.sm_ajax()` as a `data` property
+in its third argument. (The third argument is mostly the same as the options argument for `$.ajax`.) If you're not using a form, a Javascript array of `{ name: "paramName", value: "paramValue" }`
+can be passed as the `data` property. 
+
+On the server-side, the parameters are handled by ASP.Net MVC. They're available as string name/value pairs in `Request.Params[...]`, and they can also be data-bound to arguments in the 
+handler method. You can have a separate argument for each parameter, and do automatic type conversions for non-strings, or you can have one of your Model classes as the argument and MVC will
+data-bind to the class properties. This is especially useful for form submissions, because you use the same Model that you used to render the form; the parameter names will map directly to the 
+Model property names (including nested object properties and indexed collections), and the form validation attributes will be tested during data-binding to initialize a `ModelState` object.
+The `ModelState` object tells you if the validation passed, and if it didn't you can re-render the form using the same Model object and have the validation error messages shown immediately. 
 
 ## TODO
 

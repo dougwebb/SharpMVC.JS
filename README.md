@@ -13,6 +13,8 @@ SharpMVC.JS provides tools that make it easier to implement SPA-like pages in a 
 This is primarily accomplished by performing most DOM modifications server-side using Razor Partial templates, using a standard API for making the requests, a standard response format, and default behaviors
 for managing the responses including error-handling.
 
+This is not a toolset for producing a full SPA design; rather it's for a Hybrid-SPA design, where pages are loaded in a traditional manner but contain interactive elements that load additional content. You're not going to develop a game this way, but you can compress a traditional "Load form, validate, submit, server-side validate, resubmit, show result" set of pages into a single page load and AJAX-based interaction with the server.
+
 ## Hello World Example
 
 In your container page markup include an element which will wrap dynamically-loaded content. Provide a way for Javascript to select the element, and a data attribute that specifies
